@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import Link from "next/link";
 import type { X3ProgressPoint } from "@/hooks/use-progress-data";
 import { cn } from "@/lib/utils";
 
@@ -65,6 +66,14 @@ export function RepChart({ data }: RepChartProps) {
             {ex.name}
           </button>
         ))}
+        {selectedExercise && (
+          <Link
+            href={`/exercise/${selectedExercise}`}
+            className="px-2 py-1 text-[11px] rounded-md border border-border text-muted-foreground hover:text-primary hover:border-primary/50 transition-all"
+          >
+            Details &rarr;
+          </Link>
+        )}
       </div>
 
       {chartData.length > 0 ? (

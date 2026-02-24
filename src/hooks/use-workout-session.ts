@@ -20,6 +20,7 @@ interface WorkoutSession {
   date: string;
   startedAt: string;
   completedAt: string | null;
+  notes: string | null;
 }
 
 export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDefinition[], date: Date = new Date()) {
@@ -184,6 +185,15 @@ export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDef
     setSession((prev) => prev ? { ...prev, completedAt: new Date().toISOString() } : null);
   }, [session, supabase]);
 
+  const updateNotes = useCallback(async (notes: string) => {
+    if (!session) return;
+    setSession((prev) => prev ? { ...prev, notes } : null);
+    await supabase
+      .from("workout_sessions")
+      .update({ notes })
+      .eq("id", session.id);
+  }, [session, supabase]);
+
   const completedCount = Array.from(logs.values()).filter((l) => l.completed).length;
   const totalCount = exercises.length;
   const isComplete = session?.completedAt != null;
@@ -197,6 +207,7 @@ export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDef
     toggleExercise,
     updateX3Log,
     completeSession,
+    updateNotes,
     completedCount,
     totalCount,
     isComplete,

@@ -10,6 +10,7 @@ export interface ExerciseDefinition {
   defaultReps: string;
   isX3: boolean;
   isTimed: boolean;
+  videoUrl?: string;
 }
 
 export const EXERCISES: ExerciseDefinition[] = [
@@ -28,6 +29,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "15 reps",
     isX3: false,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=cat+cow+stretch+tutorial",
   },
   {
     id: "a-1-2",
@@ -42,6 +44,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "20 reps",
     isX3: false,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=wall+angels+exercise+form",
   },
   {
     id: "a-1-3",
@@ -56,6 +59,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "20 reps",
     isX3: false,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=band+pull+aparts+exercise",
   },
 
   // Phase 2: Iron Neck
@@ -72,6 +76,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "15 reps",
     isX3: false,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=iron+neck+protraction+retraction",
   },
   {
     id: "a-2-2",
@@ -86,6 +91,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "15 reps per side",
     isX3: false,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=iron+neck+left+right+look",
   },
   {
     id: "a-2-3",
@@ -100,6 +106,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "30 seconds each direction",
     isX3: false,
     isTimed: true,
+    videoUrl: "https://www.youtube.com/results?search_query=iron+neck+isometric+holds",
   },
 
   // Phase 3: X3 Push
@@ -116,6 +123,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "1 set to failure",
     isX3: true,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=x3+bar+front+squat",
   },
   {
     id: "a-3-2",
@@ -130,6 +138,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "1 set to failure",
     isX3: true,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=x3+bar+chest+press",
   },
   {
     id: "a-3-3",
@@ -144,6 +153,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "1 set to failure",
     isX3: true,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=x3+bar+overhead+press",
   },
   {
     id: "a-3-4",
@@ -158,6 +168,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "1 set to failure",
     isX3: true,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=x3+bar+triceps+press",
   },
 
   // ── Workout B: Pull & Core ─────────────────────────────────────
@@ -175,6 +186,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "60 seconds",
     isX3: false,
     isTimed: true,
+    videoUrl: "https://www.youtube.com/results?search_query=forearm+plank+proper+form",
   },
   {
     id: "b-1-2",
@@ -189,6 +201,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "20 reps",
     isX3: false,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=glute+bridge+exercise+tutorial",
   },
   {
     id: "b-1-3",
@@ -203,6 +216,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "10 reps per side",
     isX3: false,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=bird+dog+exercise+form",
   },
 
   // Phase 2: Iron Neck – Rotational
@@ -219,6 +233,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "5 spins each way",
     isX3: false,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=iron+neck+360+spins",
   },
   {
     id: "b-2-2",
@@ -233,6 +248,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "10 reps",
     isX3: false,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=iron+neck+figure+eights",
   },
   {
     id: "b-2-3",
@@ -247,6 +263,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "10 reps per side",
     isX3: false,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=iron+neck+diagonals+exercise",
   },
 
   // Phase 3: X3 Pull
@@ -263,6 +280,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "1 set to failure",
     isX3: true,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=x3+bar+deadlift",
   },
   {
     id: "b-3-2",
@@ -277,6 +295,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "1 set to failure",
     isX3: true,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=x3+bar+bent+over+row",
   },
   {
     id: "b-3-3",
@@ -291,6 +310,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "1 set to failure",
     isX3: true,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=x3+bar+bicep+curl",
   },
   {
     id: "b-3-4",
@@ -305,6 +325,7 @@ export const EXERCISES: ExerciseDefinition[] = [
     defaultReps: "1 set to failure",
     isX3: true,
     isTimed: false,
+    videoUrl: "https://www.youtube.com/results?search_query=x3+bar+calf+raise",
   },
 ];
 

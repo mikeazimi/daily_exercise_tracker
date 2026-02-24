@@ -10,6 +10,7 @@ export interface NutritionLog {
   proteinG: number | null;
   carbsG: number | null;
   fatG: number | null;
+  waterIntakeOz: number | null;
 }
 
 export function useNutritionLog(date: string) {
@@ -39,6 +40,7 @@ export function useNutritionLog(date: string) {
           proteinG: data.protein_g,
           carbsG: data.carbs_g,
           fatG: data.fat_g,
+          waterIntakeOz: data.water_intake_oz,
         });
       } else {
         setLog(null);
@@ -80,12 +82,47 @@ export function useNutritionLog(date: string) {
         proteinG: data.protein_g,
         carbsG: data.carbs_g,
         fatG: data.fat_g,
+        waterIntakeOz: data.water_intake_oz,
       });
     }
     setSaving(false);
   }, [date, supabase]);
 
-  return { log, loading, saving, saveLog };
+  const addWater = useCallback(async (oz: number) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const currentWater = log?.waterIntakeOz || 0;
+    const newWater = currentWater + oz;
+
+    const { data, error } = await supabase
+      .from("nutrition_logs")
+      .upsert({
+        user_id: user.id,
+        date,
+        water_intake_oz: newWater,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,date" })
+      .select()
+      .single();
+
+    if (data && !error) {
+      setLog((prev) => prev
+        ? { ...prev, waterIntakeOz: data.water_intake_oz }
+        : {
+            id: data.id,
+            date: data.date,
+            calories: data.calories,
+            proteinG: data.protein_g,
+            carbsG: data.carbs_g,
+            fatG: data.fat_g,
+            waterIntakeOz: data.water_intake_oz,
+          }
+      );
+    }
+  }, [date, log, supabase]);
+
+  return { log, loading, saving, saveLog, addWater };
 }
 
 export function useNutritionHistory() {
@@ -113,6 +150,7 @@ export function useNutritionHistory() {
           proteinG: d.protein_g as number | null,
           carbsG: d.carbs_g as number | null,
           fatG: d.fat_g as number | null,
+          waterIntakeOz: d.water_intake_oz as number | null,
         })));
       }
       setLoading(false);

@@ -1,10 +1,16 @@
 "use client";
 
+import { useCallback, useState } from "react";
 import { getPhaseGroups, getExercisesForWorkout } from "@/lib/data/exercises";
 import { useWorkoutSession } from "@/hooks/use-workout-session";
 import { useProgression } from "@/hooks/use-progression";
+import { usePersonalRecords, type PRResult } from "@/hooks/use-personal-records";
+import { useRestTimer } from "@/hooks/use-rest-timer";
 import { PhaseSection } from "./phase-section";
 import { ProgressionBanner } from "./progression-banner";
+import { PRCelebration } from "./pr-celebration";
+import { RestTimer } from "./rest-timer";
+import { WorkoutNotes } from "./workout-notes";
 import { cn } from "@/lib/utils";
 
 interface WorkoutViewProps {
@@ -16,6 +22,13 @@ export function WorkoutView({ workoutType, date }: WorkoutViewProps) {
   const phases = getPhaseGroups(workoutType);
   const exercises = getExercisesForWorkout(workoutType);
   const { recommendations, acceptRecommendation, dismissRecommendation } = useProgression();
+  const { checkForPR } = usePersonalRecords();
+  const [prResult, setPrResult] = useState<PRResult | null>(null);
+
+  const restTimerSeconds = typeof window !== "undefined"
+    ? parseInt(localStorage.getItem("rest-timer-seconds") || "90", 10)
+    : 90;
+  const restTimer = useRestTimer(restTimerSeconds);
 
   const todayExerciseIds = exercises.map((e) => e.id);
   const relevantRecs = recommendations.filter((r) => todayExerciseIds.includes(r.exerciseId));
@@ -33,10 +46,20 @@ export function WorkoutView({ workoutType, date }: WorkoutViewProps) {
     toggleExercise,
     updateX3Log,
     completeSession,
+    updateNotes,
     completedCount,
     totalCount,
     isComplete,
   } = useWorkoutSession(workoutType, exercises, date);
+
+  const handleExerciseLogged = useCallback((exerciseId?: string, exerciseName?: string, bandId?: string, fullReps?: number, estimatedForce?: number) => {
+    if (!isComplete) restTimer.start();
+    if (exerciseId && exerciseName && bandId && fullReps && estimatedForce && session) {
+      checkForPR(exerciseId, exerciseName, bandId, fullReps, estimatedForce, session.id).then((result) => {
+        if (result) setPrResult(result);
+      });
+    }
+  }, [restTimer, isComplete, session, checkForPR]);
 
   if (loading) {
     return (
@@ -50,6 +73,16 @@ export function WorkoutView({ workoutType, date }: WorkoutViewProps) {
 
   return (
     <div className="space-y-6">
+      {/* PR celebration overlay */}
+      <PRCelebration result={prResult} onDone={() => setPrResult(null)} />
+
+      {/* Rest timer overlay */}
+      <RestTimer
+        remaining={restTimer.remaining}
+        isRunning={restTimer.isRunning}
+        onSkip={restTimer.stop}
+      />
+
       {/* Progress bar */}
       {session && (
         <div className="space-y-1.5">
@@ -135,9 +168,17 @@ export function WorkoutView({ workoutType, date }: WorkoutViewProps) {
                 sessionActive={!isComplete}
                 onToggle={toggleExercise}
                 onUpdateX3={updateX3Log}
+                onExerciseLogged={handleExerciseLogged}
               />
             ))}
           </div>
+
+          {/* Workout notes */}
+          <WorkoutNotes
+            notes={session.notes || ""}
+            onSave={updateNotes}
+            disabled={isComplete}
+          />
 
           {/* Complete button */}
           {!isComplete && completedCount === totalCount && totalCount > 0 && (

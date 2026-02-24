@@ -38,6 +38,21 @@ export function ExerciseInfo({ exercise }: ExerciseInfoProps) {
         {exercise.description}
       </p>
 
+      {/* Video demo link */}
+      {exercise.videoUrl && (
+        <a
+          href={exercise.videoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+        >
+          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          Watch Demo Video
+        </a>
+      )}
+
       {/* Band guide for X3 exercises */}
       {exercise.isX3 && (
         <div className="rounded-md border border-border/50 bg-muted/30 p-3 space-y-1.5">

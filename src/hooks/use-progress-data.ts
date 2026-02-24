@@ -10,6 +10,7 @@ export interface SessionSummary {
   completedAt: string | null;
   exerciseCount: number;
   completedExercises: number;
+  notes: string | null;
 }
 
 export interface X3ProgressPoint {
@@ -63,6 +64,7 @@ export function useProgressData() {
             completedAt: s.completed_at,
             exerciseCount: total || 0,
             completedExercises: completed || 0,
+            notes: s.notes || null,
           });
         }
         setSessions(summaries);

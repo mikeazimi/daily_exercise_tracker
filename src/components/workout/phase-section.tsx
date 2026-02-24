@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PhaseGroup } from "@/lib/data/exercises";
 import type { ExerciseLog } from "@/hooks/use-workout-session";
+import { calculateEstimatedForce } from "@/lib/force-calculator";
 import { ExerciseCard } from "./exercise-card";
 import { X3ExerciseCard } from "./x3-exercise-card";
 import { cn } from "@/lib/utils";
@@ -13,9 +14,10 @@ interface PhaseSectionProps {
   sessionActive: boolean;
   onToggle: (exerciseId: string) => void;
   onUpdateX3: (exerciseId: string, bandId: string, fullReps: number, partialReps: number) => void;
+  onExerciseLogged?: (exerciseId?: string, exerciseName?: string, bandId?: string, fullReps?: number, estimatedForce?: number) => void;
 }
 
-export function PhaseSection({ phase, logs, sessionActive, onToggle, onUpdateX3 }: PhaseSectionProps) {
+export function PhaseSection({ phase, logs, sessionActive, onToggle, onUpdateX3, onExerciseLogged }: PhaseSectionProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const completedInPhase = phase.exercises.filter(
@@ -73,9 +75,11 @@ export function PhaseSection({ phase, logs, sessionActive, onToggle, onUpdateX3 
                 exercise={exercise}
                 log={logs.get(exercise.id)}
                 disabled={!sessionActive}
-                onUpdate={(bandId, fullReps, partialReps) =>
-                  onUpdateX3(exercise.id, bandId, fullReps, partialReps)
-                }
+                onUpdate={(bandId, fullReps, partialReps) => {
+                  onUpdateX3(exercise.id, bandId, fullReps, partialReps);
+                  const force = calculateEstimatedForce(bandId, fullReps, partialReps);
+                  onExerciseLogged?.(exercise.id, exercise.name, bandId, fullReps, force?.peakForce);
+                }}
               />
             ) : (
               <ExerciseCard
@@ -83,7 +87,11 @@ export function PhaseSection({ phase, logs, sessionActive, onToggle, onUpdateX3 
                 exercise={exercise}
                 completed={logs.get(exercise.id)?.completed || false}
                 disabled={!sessionActive}
-                onToggle={() => onToggle(exercise.id)}
+                onToggle={() => {
+                  const wasCompleted = logs.get(exercise.id)?.completed;
+                  onToggle(exercise.id);
+                  if (!wasCompleted) onExerciseLogged?.();
+                }}
               />
             )
           )}

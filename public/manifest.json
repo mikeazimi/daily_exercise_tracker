@@ -2,10 +2,14 @@
   "name": "Daily Exercise",
   "short_name": "Exercise",
   "description": "Track your daily workout routine",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#09090b",
   "theme_color": "#09090b",
+  "categories": ["health", "fitness"],
   "icons": [
     {
       "src": "/icon-192.png",

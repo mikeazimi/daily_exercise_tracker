@@ -53,6 +53,11 @@ export function HistoryTable({ sessions }: HistoryTableProps) {
                     {format(parseISO(session.date), "MMM d, yyyy")}
                   </span>
                 </div>
+                {session.notes && (
+                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                    {session.notes}
+                  </p>
+                )}
               </div>
 
               {/* Completion */}

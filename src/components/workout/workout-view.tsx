@@ -2,7 +2,9 @@
 
 import { getPhaseGroups, getExercisesForWorkout } from "@/lib/data/exercises";
 import { useWorkoutSession } from "@/hooks/use-workout-session";
+import { useProgression } from "@/hooks/use-progression";
 import { PhaseSection } from "./phase-section";
+import { ProgressionBanner } from "./progression-banner";
 import { cn } from "@/lib/utils";
 
 interface WorkoutViewProps {
@@ -13,6 +15,10 @@ interface WorkoutViewProps {
 export function WorkoutView({ workoutType, date }: WorkoutViewProps) {
   const phases = getPhaseGroups(workoutType);
   const exercises = getExercisesForWorkout(workoutType);
+  const { recommendations, acceptRecommendation, dismissRecommendation } = useProgression();
+
+  const todayExerciseIds = exercises.map((e) => e.id);
+  const relevantRecs = recommendations.filter((r) => todayExerciseIds.includes(r.exerciseId));
 
   const isToday = new Date().toISOString().split("T")[0] === date.toISOString().split("T")[0];
   const isFuture = date.toISOString().split("T")[0] > new Date().toISOString().split("T")[0];
@@ -68,6 +74,15 @@ export function WorkoutView({ workoutType, date }: WorkoutViewProps) {
             />
           </div>
         </div>
+      )}
+
+      {/* Progression recommendations */}
+      {isToday && relevantRecs.length > 0 && (
+        <ProgressionBanner
+          recommendations={relevantRecs}
+          onAccept={acceptRecommendation}
+          onDismiss={dismissRecommendation}
+        />
       )}
 
       {/* Start button or phases */}

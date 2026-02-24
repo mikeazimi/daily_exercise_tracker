@@ -2,10 +2,18 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useBodyMeasurements } from "@/hooks/use-body-measurements";
+import { useWhoopData } from "@/hooks/use-whoop-data";
+import { MeasurementForm } from "@/components/body/measurement-form";
+import { WhoopConnect } from "@/components/whoop/whoop-connect";
 
 export default function SettingsPage() {
   const supabase = createClient();
   const [exporting, setExporting] = useState(false);
+  const { latest, saving: bodySaving, saveMeasurement } = useBodyMeasurements();
+  const { isConnected: whoopConnected } = useWhoopData();
+
+  const today = new Date().toISOString().split("T")[0];
 
   async function handleExport() {
     setExporting(true);
@@ -47,6 +55,45 @@ export default function SettingsPage() {
         </p>
       </div>
 
+      {/* Body Composition */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold">Body Composition</h2>
+        {latest && (
+          <div className="text-xs text-muted-foreground">
+            Last recorded: {latest.weightLbs && `${latest.weightLbs} lbs`}
+            {latest.weightLbs && latest.bodyFatPct && " · "}
+            {latest.bodyFatPct && `${latest.bodyFatPct}% BF`}
+            {latest.date && ` (${latest.date})`}
+          </div>
+        )}
+        <div className="rounded-lg border border-border bg-card p-4">
+          <MeasurementForm
+            initialWeight={latest?.weightLbs}
+            initialBodyFat={latest?.bodyFatPct}
+            saving={bodySaving}
+            onSave={(w, bf) => saveMeasurement(today, w, bf)}
+          />
+        </div>
+      </div>
+
+      {/* Integrations */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold">Integrations</h2>
+        <WhoopConnect isConnected={whoopConnected} />
+        <div className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
+          <div className="flex items-center gap-3">
+            <span className="text-lg">&#x2764;&#xFE0F;</span>
+            <div>
+              <p className="text-sm font-medium">Apple Health</p>
+              <p className="text-xs text-muted-foreground">Import health & activity data</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider bg-muted px-2 py-0.5 rounded">
+            Coming Soon
+          </span>
+        </div>
+      </div>
+
       {/* Data Export */}
       <div className="space-y-3">
         <h2 className="text-sm font-semibold">Data</h2>
@@ -63,32 +110,6 @@ export default function SettingsPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
           </svg>
         </button>
-      </div>
-
-      {/* Future Integrations */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold">Integrations</h2>
-        {[
-          { name: "cal.ai", desc: "Sync food tracking data", icon: "🍎" },
-          { name: "Apple Health", desc: "Import health & activity data", icon: "❤️" },
-          { name: "Whoop", desc: "Sync recovery and strain data", icon: "⌚" },
-        ].map((integration) => (
-          <div
-            key={integration.name}
-            className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-lg">{integration.icon}</span>
-              <div>
-                <p className="text-sm font-medium">{integration.name}</p>
-                <p className="text-xs text-muted-foreground">{integration.desc}</p>
-              </div>
-            </div>
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider bg-muted px-2 py-0.5 rounded">
-              Coming Soon
-            </span>
-          </div>
-        ))}
       </div>
 
       {/* Sign Out */}

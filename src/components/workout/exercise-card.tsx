@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ExerciseDefinition } from "@/lib/data/exercises";
+import { ExerciseInfo } from "./exercise-info";
 import { cn } from "@/lib/utils";
 
 interface ExerciseCardProps {
@@ -56,11 +57,7 @@ export function ExerciseCard({ exercise, completed, disabled, onToggle }: Exerci
             </span>
           </div>
 
-          {expanded && (
-            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-              {exercise.description}
-            </p>
-          )}
+          {expanded && <ExerciseInfo exercise={exercise} />}
         </div>
       </div>
     </div>

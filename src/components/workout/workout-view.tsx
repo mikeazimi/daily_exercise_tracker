@@ -7,11 +7,16 @@ import { cn } from "@/lib/utils";
 
 interface WorkoutViewProps {
   workoutType: "A" | "B";
+  date: Date;
 }
 
-export function WorkoutView({ workoutType }: WorkoutViewProps) {
+export function WorkoutView({ workoutType, date }: WorkoutViewProps) {
   const phases = getPhaseGroups(workoutType);
   const exercises = getExercisesForWorkout(workoutType);
+
+  const isToday = new Date().toISOString().split("T")[0] === date.toISOString().split("T")[0];
+  const isFuture = date.toISOString().split("T")[0] > new Date().toISOString().split("T")[0];
+  const isPast = !isToday && !isFuture;
 
   const {
     session,
@@ -25,7 +30,7 @@ export function WorkoutView({ workoutType }: WorkoutViewProps) {
     completedCount,
     totalCount,
     isComplete,
-  } = useWorkoutSession(workoutType, exercises);
+  } = useWorkoutSession(workoutType, exercises, date);
 
   if (loading) {
     return (
@@ -68,15 +73,27 @@ export function WorkoutView({ workoutType }: WorkoutViewProps) {
       {/* Start button or phases */}
       {!session ? (
         <div className="text-center py-8 space-y-4">
-          <p className="text-muted-foreground text-sm">
-            Ready to begin your workout?
-          </p>
-          <button
-            onClick={startSession}
-            className="px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg text-sm hover:opacity-90 transition-opacity"
-          >
-            Start Workout
-          </button>
+          {isFuture ? (
+            <p className="text-muted-foreground text-sm">
+              Upcoming workout preview
+            </p>
+          ) : isPast ? (
+            <p className="text-muted-foreground text-sm">
+              No workout recorded for this day
+            </p>
+          ) : (
+            <>
+              <p className="text-muted-foreground text-sm">
+                Ready to begin your workout?
+              </p>
+              <button
+                onClick={startSession}
+                className="px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg text-sm hover:opacity-90 transition-opacity"
+              >
+                Start Workout
+              </button>
+            </>
+          )}
 
           {/* Show exercises preview */}
           <div className="mt-8 space-y-6">

@@ -22,16 +22,16 @@ interface WorkoutSession {
   completedAt: string | null;
 }
 
-export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDefinition[]) {
+export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDefinition[], date: Date = new Date()) {
   const supabase = createClient();
   const [session, setSession] = useState<WorkoutSession | null>(null);
   const [logs, setLogs] = useState<Map<string, ExerciseLog>>(new Map());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const today = new Date().toISOString().split("T")[0];
+  const dateStr = date.toISOString().split("T")[0];
 
-  // Load existing session for today
+  // Load existing session for dateStr
   useEffect(() => {
     async function loadSession() {
       setLoading(true);
@@ -42,7 +42,7 @@ export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDef
         .from("workout_sessions")
         .select("*")
         .eq("user_id", user.id)
-        .eq("date", today)
+        .eq("date", dateStr)
         .single();
 
       if (existingSession) {
@@ -71,7 +71,7 @@ export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDef
       setLoading(false);
     }
     loadSession();
-  }, [today, supabase]);
+  }, [dateStr, supabase]);
 
   const startSession = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -82,7 +82,7 @@ export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDef
       .insert({
         user_id: user.id,
         workout_type: workoutType,
-        date: today,
+        date: dateStr,
       })
       .select()
       .single();
@@ -106,7 +106,7 @@ export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDef
       }
       setLogs(logMap);
     }
-  }, [supabase, workoutType, today, exercises]);
+  }, [supabase, workoutType, dateStr, exercises]);
 
   const toggleExercise = useCallback(async (exerciseId: string) => {
     if (!session) return;

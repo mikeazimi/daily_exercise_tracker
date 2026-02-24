@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import type { ExerciseDefinition } from "@/lib/data/exercises";
 import { X3_BANDS, type BandProfile } from "@/lib/data/bands";
 import { calculateEstimatedForce, getForceDisplay } from "@/lib/force-calculator";
+import { ExerciseInfo } from "./exercise-info";
 import { cn } from "@/lib/utils";
 import type { ExerciseLog } from "@/hooks/use-workout-session";
 
@@ -79,11 +80,7 @@ export function X3ExerciseCard({ exercise, log, disabled, onUpdate }: X3Exercise
             )}
           </div>
 
-          {expanded && (
-            <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-              {exercise.description}
-            </p>
-          )}
+          {expanded && <ExerciseInfo exercise={exercise} />}
 
           {/* X3 input fields */}
           {!disabled && (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { ExerciseDefinition } from "@/lib/data/exercises";
-import { X3_BANDS, type BandProfile } from "@/lib/data/bands";
+import { X3_BANDS } from "@/lib/data/bands";
 import { calculateEstimatedForce, getForceDisplay } from "@/lib/force-calculator";
 import { ExerciseInfo } from "./exercise-info";
 import { cn } from "@/lib/utils";
@@ -85,7 +85,7 @@ export function X3ExerciseCard({ exercise, log, disabled, onUpdate }: X3Exercise
           {/* X3 input fields */}
           {!disabled && (
             <div className="mt-3 space-y-2">
-              {/* Band selector */}
+              {/* Band selector (4 bands) */}
               <div className="flex gap-1.5 flex-wrap">
                 {X3_BANDS.map((band) => (
                   <button

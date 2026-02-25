@@ -39,14 +39,21 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/80 backdrop-blur-lg">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/80 backdrop-blur-lg"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       <div className="mx-auto max-w-lg flex items-center justify-around py-2">
         {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            item.href === "/"
+              ? pathname === "/" || pathname === ""
+              : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
+              prefetch={false}
               className={cn(
                 "flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors",
                 isActive

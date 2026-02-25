@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useBodyMeasurements } from "@/hooks/use-body-measurements";
 import { useWhoopData } from "@/hooks/use-whoop-data";
 import { MeasurementForm } from "@/components/body/measurement-form";
 import { WhoopConnect } from "@/components/whoop/whoop-connect";
 import { toCSV } from "@/lib/export/csv";
+import { isNativeApp } from "@/lib/capacitor";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const REST_OPTIONS = [30, 60, 90, 120];
 const DELOAD_OPTIONS = [
@@ -18,6 +21,7 @@ const DELOAD_OPTIONS = [
 ];
 
 export default function SettingsPage() {
+  const router = useRouter();
   const supabase = createClient();
   const [exporting, setExporting] = useState(false);
   const [exportingCSV, setExportingCSV] = useState(false);
@@ -119,7 +123,7 @@ export default function SettingsPage() {
 
   async function handleSignOut() {
     await supabase.auth.signOut();
-    window.location.href = "/login";
+    router.push("/login");
   }
 
   return (
@@ -150,6 +154,26 @@ export default function SettingsPage() {
             onSave={(w, bf) => saveMeasurement(today, w, bf)}
           />
         </div>
+      </div>
+
+      {/* Workout Program */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold">Workout Program</h2>
+        <Link
+          href="/settings/program"
+          className="w-full flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-sm hover:bg-muted/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-lg">&#x1F3CB;&#xFE0F;</span>
+            <div>
+              <p className="font-medium">Customize Program</p>
+              <p className="text-xs text-muted-foreground">Build your weekly workout schedule</p>
+            </div>
+          </div>
+          <svg className="w-4 h-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        </Link>
       </div>
 
       {/* Workout Preferences */}
@@ -204,7 +228,7 @@ export default function SettingsPage() {
       {/* Integrations */}
       <div className="space-y-3">
         <h2 className="text-sm font-semibold">Integrations</h2>
-        <WhoopConnect isConnected={whoopConnected} />
+        {!isNativeApp() && <WhoopConnect isConnected={whoopConnected} />}
         <div className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
           <div className="flex items-center gap-3">
             <span className="text-lg">&#x2764;&#xFE0F;</span>

@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { isNativeApp } from "@/lib/capacitor";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
@@ -20,7 +23,11 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        options: {
+          emailRedirectTo: isNativeApp()
+            ? "https://daily-exercise-tracker-nine.vercel.app/auth/callback"
+            : `${window.location.origin}/auth/callback`,
+        },
       });
       if (error) {
         setMessage(error.message);
@@ -28,14 +35,14 @@ export default function LoginPage() {
         setMessage("Check your email for the confirmation link.");
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) {
         setMessage(error.message);
       } else {
-        window.location.href = "/";
+        router.push("/");
       }
     }
 

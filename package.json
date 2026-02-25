@@ -6,9 +6,18 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:ios": "CAPACITOR_BUILD=true node scripts/build-ios.mjs",
+    "sync:ios": "npx cap sync ios",
+    "open:ios": "npx cap open ios",
+    "ios": "npm run build:ios && npm run sync:ios && npm run open:ios"
   },
   "dependencies": {
+    "@capacitor/core": "^8.1.0",
+    "@capacitor/ios": "^8.1.0",
+    "@capacitor/keyboard": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.1",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.97.0",
     "@types/node": "^25.3.0",
@@ -22,6 +31,7 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.1.0",
     "@tailwindcss/postcss": "^4.2.1",
     "eslint": "^9.39.3",
     "eslint-config-next": "^16.1.6",

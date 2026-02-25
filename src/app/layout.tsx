@@ -31,7 +31,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen pb-20">
+      <body className="min-h-screen">
         <AuthProvider>
           <AuthGuard>
             <AppShell>{children}</AppShell>

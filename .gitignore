@@ -41,6 +41,6 @@ next-env.d.ts
 # supabase temp
 supabase/.temp/
 
-# capacitor (generated web assets and ios pods)
-ios/App/App/public/
-ios/App/Pods/
+# capacitor / ios
+ios/
+.ios-build-tmp/

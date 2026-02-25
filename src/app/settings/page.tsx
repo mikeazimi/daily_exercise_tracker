@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useBodyMeasurements } from "@/hooks/use-body-measurements";
 import { useWhoopData } from "@/hooks/use-whoop-data";
+import { useUserSettings } from "@/hooks/use-user-settings";
 import { MeasurementForm } from "@/components/body/measurement-form";
 import { WhoopConnect } from "@/components/whoop/whoop-connect";
 import { toCSV } from "@/lib/export/csv";
@@ -20,6 +21,31 @@ const DELOAD_OPTIONS = [
   { label: "6 weeks", value: 6 },
 ];
 
+interface FeatureToggle {
+  key: keyof typeof FEATURE_KEYS;
+  label: string;
+  description: string;
+  icon: string;
+}
+
+const FEATURE_KEYS = {
+  enableNutrition: true,
+  enableWater: true,
+  enableBodyMeasurements: true,
+  enableProgressPhotos: true,
+  enableDeload: true,
+  enableWhoop: true,
+} as const;
+
+const FEATURE_TOGGLES: FeatureToggle[] = [
+  { key: "enableNutrition", label: "Nutrition Tracking", description: "Log daily calories, protein, carbs, and fat", icon: "🍎" },
+  { key: "enableWater", label: "Water Intake", description: "Track daily hydration", icon: "💧" },
+  { key: "enableBodyMeasurements", label: "Body Measurements", description: "Log weight and body fat", icon: "⚖️" },
+  { key: "enableProgressPhotos", label: "Progress Photos", description: "Capture progress photos", icon: "📷" },
+  { key: "enableDeload", label: "Deload Reminders", description: "Recovery intensity reminders", icon: "🔔" },
+  { key: "enableWhoop", label: "Whoop Integration", description: "Recovery and strain data", icon: "⌚" },
+];
+
 export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -27,6 +53,7 @@ export default function SettingsPage() {
   const [exportingCSV, setExportingCSV] = useState(false);
   const { latest, saving: bodySaving, saveMeasurement } = useBodyMeasurements();
   const { isConnected: whoopConnected } = useWhoopData();
+  const { settings, saving: settingsSaving, saveSettings } = useUserSettings();
 
   const [restTimerSeconds, setRestTimerSeconds] = useState(90);
   const [deloadWeeks, setDeloadWeeks] = useState(4);
@@ -48,6 +75,11 @@ export default function SettingsPage() {
   function handleDeloadChange(weeks: number) {
     setDeloadWeeks(weeks);
     localStorage.setItem("deload-frequency-weeks", String(weeks));
+  }
+
+  function handleFeatureToggle(key: keyof typeof FEATURE_KEYS) {
+    const current = settings[key] as boolean;
+    saveSettings({ [key]: !current });
   }
 
   async function handleExport() {
@@ -136,25 +168,27 @@ export default function SettingsPage() {
       </div>
 
       {/* Body Composition */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold">Body Composition</h2>
-        {latest && (
-          <div className="text-xs text-muted-foreground">
-            Last recorded: {latest.weightLbs && `${latest.weightLbs} lbs`}
-            {latest.weightLbs && latest.bodyFatPct && " · "}
-            {latest.bodyFatPct && `${latest.bodyFatPct}% BF`}
-            {latest.date && ` (${latest.date})`}
+      {settings.enableBodyMeasurements && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold">Body Composition</h2>
+          {latest && (
+            <div className="text-xs text-muted-foreground">
+              Last recorded: {latest.weightLbs && `${latest.weightLbs} lbs`}
+              {latest.weightLbs && latest.bodyFatPct && " · "}
+              {latest.bodyFatPct && `${latest.bodyFatPct}% BF`}
+              {latest.date && ` (${latest.date})`}
+            </div>
+          )}
+          <div className="rounded-lg border border-border bg-card p-4">
+            <MeasurementForm
+              initialWeight={latest?.weightLbs}
+              initialBodyFat={latest?.bodyFatPct}
+              saving={bodySaving}
+              onSave={(w, bf) => saveMeasurement(today, w, bf)}
+            />
           </div>
-        )}
-        <div className="rounded-lg border border-border bg-card p-4">
-          <MeasurementForm
-            initialWeight={latest?.weightLbs}
-            initialBodyFat={latest?.bodyFatPct}
-            saving={bodySaving}
-            onSave={(w, bf) => saveMeasurement(today, w, bf)}
-          />
         </div>
-      </div>
+      )}
 
       {/* Workout Program */}
       <div className="space-y-3">
@@ -203,45 +237,87 @@ export default function SettingsPage() {
         </div>
 
         {/* Deload Frequency */}
-        <div className="rounded-lg border border-border bg-card px-4 py-3 space-y-2">
-          <p className="text-sm font-medium">Deload Reminder</p>
-          <p className="text-xs text-muted-foreground">Suggest reduced intensity every N weeks</p>
-          <div className="flex gap-2">
-            {DELOAD_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => handleDeloadChange(opt.value)}
-                className={cn(
-                  "flex-1 py-1.5 text-xs font-medium rounded-md border transition-colors",
-                  deloadWeeks === opt.value
-                    ? "border-primary bg-primary/20 text-primary"
-                    : "border-border text-muted-foreground hover:border-foreground/30"
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
+        {settings.enableDeload && (
+          <div className="rounded-lg border border-border bg-card px-4 py-3 space-y-2">
+            <p className="text-sm font-medium">Deload Reminder</p>
+            <p className="text-xs text-muted-foreground">Suggest reduced intensity every N weeks</p>
+            <div className="flex gap-2">
+              {DELOAD_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleDeloadChange(opt.value)}
+                  className={cn(
+                    "flex-1 py-1.5 text-xs font-medium rounded-md border transition-colors",
+                    deloadWeeks === opt.value
+                      ? "border-primary bg-primary/20 text-primary"
+                      : "border-border text-muted-foreground hover:border-foreground/30"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
+        )}
+      </div>
+
+      {/* Feature Toggles */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold">Features</h2>
+        <p className="text-xs text-muted-foreground">Toggle features on or off to customize your dashboard</p>
+        <div className="space-y-1">
+          {FEATURE_TOGGLES.map((f) => {
+            const enabled = settings[f.key] as boolean;
+            return (
+              <button
+                key={f.key}
+                onClick={() => handleFeatureToggle(f.key)}
+                disabled={settingsSaving}
+                className="w-full flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:bg-muted/30 text-left"
+              >
+                <span className="text-lg shrink-0">{f.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{f.label}</p>
+                  <p className="text-xs text-muted-foreground">{f.description}</p>
+                </div>
+                <div
+                  className={cn(
+                    "w-9 h-5 rounded-full p-0.5 transition-colors shrink-0",
+                    enabled ? "bg-primary" : "bg-muted"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded-full bg-white shadow transition-transform",
+                      enabled ? "translate-x-4" : "translate-x-0"
+                    )}
+                  />
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Integrations */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold">Integrations</h2>
-        {!isNativeApp() && <WhoopConnect isConnected={whoopConnected} />}
-        <div className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
-          <div className="flex items-center gap-3">
-            <span className="text-lg">&#x2764;&#xFE0F;</span>
-            <div>
-              <p className="text-sm font-medium">Apple Health</p>
-              <p className="text-xs text-muted-foreground">Import health & activity data</p>
+      {settings.enableWhoop && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold">Integrations</h2>
+          {!isNativeApp() && <WhoopConnect isConnected={whoopConnected} />}
+          <div className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3">
+            <div className="flex items-center gap-3">
+              <span className="text-lg">&#x2764;&#xFE0F;</span>
+              <div>
+                <p className="text-sm font-medium">Apple Health</p>
+                <p className="text-xs text-muted-foreground">Import health & activity data</p>
+              </div>
             </div>
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider bg-muted px-2 py-0.5 rounded">
+              Coming Soon
+            </span>
           </div>
-          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider bg-muted px-2 py-0.5 rounded">
-            Coming Soon
-          </span>
         </div>
-      </div>
+      )}
 
       {/* Data Export */}
       <div className="space-y-3">

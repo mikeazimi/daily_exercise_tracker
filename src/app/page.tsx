@@ -23,10 +23,12 @@ import { useDeload } from "@/hooks/use-deload";
 import { useProgressPhotos } from "@/hooks/use-progress-photos";
 import { PhotoUpload } from "@/components/body/photo-upload";
 import { useUserProgram } from "@/hooks/use-user-program";
+import { useUserSettings } from "@/hooks/use-user-settings";
 
 export default function HomePage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { program, loading: programLoading, getTodaysWorkout } = useUserProgram();
+  const { settings } = useUserSettings();
   const todaysWorkout = getTodaysWorkout(selectedDate);
   const dateStr = selectedDate.toISOString().split("T")[0];
   const isToday = dateStr === new Date().toISOString().split("T")[0];
@@ -59,7 +61,7 @@ export default function HomePage() {
       {isToday && <StreakBadge streak={streakData} />}
 
       {/* Weekly weigh-in banner (only on today) */}
-      {isToday && (
+      {isToday && settings.enableBodyMeasurements && (
         <MeasurementBanner
           daysSinceLastMeasurement={daysSinceLastMeasurement}
           saving={bodySaving}
@@ -68,10 +70,10 @@ export default function HomePage() {
       )}
 
       {/* Deload banner */}
-      {isToday && <DeloadBanner deload={deloadInfo} />}
+      {isToday && settings.enableDeload && <DeloadBanner deload={deloadInfo} />}
 
       {/* Whoop recovery (only if connected and today has data) */}
-      {whoopConnected && whoopToday && isToday && (
+      {settings.enableWhoop && whoopConnected && whoopToday && isToday && (
         <RecoveryCard data={whoopToday} />
       )}
 
@@ -94,16 +96,18 @@ export default function HomePage() {
       {isToday && <WeeklySummary data={weeklySummaryData} loading={weeklyLoading} />}
 
       {/* Nutrition summary */}
-      <MacroSummary
-        log={nutritionLog}
-        loading={nutritionLoading}
-        saving={nutritionSaving}
-        onSave={saveLog}
-        targets={targets}
-      />
+      {settings.enableNutrition && (
+        <MacroSummary
+          log={nutritionLog}
+          loading={nutritionLoading}
+          saving={nutritionSaving}
+          onSave={saveLog}
+          targets={targets}
+        />
+      )}
 
       {/* Water tracker */}
-      {isToday && (
+      {isToday && settings.enableWater && (
         <WaterTracker
           currentOz={nutritionLog?.waterIntakeOz || 0}
           targetOz={waterTarget}
@@ -112,7 +116,7 @@ export default function HomePage() {
       )}
 
       {/* Progress photo */}
-      {isToday && (
+      {isToday && settings.enableProgressPhotos && (
         <div className="space-y-2">
           <button
             onClick={() => setShowPhotoUpload(!showPhotoUpload)}

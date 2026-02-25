@@ -6,10 +6,14 @@ import { useAuth } from "@/components/auth/auth-provider";
 
 const PUBLIC_ROUTES = ["/login", "/auth"];
 
-export function AuthGuard({ children }: { children: React.ReactNode }) {
+export function useIsPublicRoute() {
   const pathname = usePathname();
+  return PUBLIC_ROUTES.some((r) => pathname.startsWith(r));
+}
+
+export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const isPublicRoute = PUBLIC_ROUTES.some((r) => pathname.startsWith(r));
+  const isPublicRoute = useIsPublicRoute();
   const { user, loading } = useAuth();
 
   useEffect(() => {

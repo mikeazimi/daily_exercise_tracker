@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { BottomNav } from "@/components/nav";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { AuthGuard } from "@/components/auth/auth-guard";
+import { AppShell } from "@/components/app-shell";
 import { CapacitorInit } from "@/components/capacitor-init";
 
 export const metadata: Metadata = {
@@ -34,8 +34,7 @@ export default function RootLayout({
       <body className="min-h-screen pb-20">
         <AuthProvider>
           <AuthGuard>
-            <main className="mx-auto max-w-lg px-4 py-6">{children}</main>
-            <BottomNav />
+            <AppShell>{children}</AppShell>
           </AuthGuard>
         </AuthProvider>
         <CapacitorInit />

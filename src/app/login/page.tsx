@@ -5,28 +5,43 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { isNativeApp } from "@/lib/capacitor";
 
+type Mode = "signin" | "signup" | "forgot";
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [mode, setMode] = useState<Mode>("signin");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const supabase = createClient();
+
+  function getRedirectUrl(path: string) {
+    return isNativeApp()
+      ? `https://daily-exercise-tracker-nine.vercel.app${path}`
+      : `${window.location.origin}${path}`;
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    if (isSignUp) {
+    if (mode === "forgot") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: getRedirectUrl("/auth/callback?next=/login/reset"),
+      });
+      if (error) {
+        setMessage(error.message);
+      } else {
+        setMessage("Check your email for the password reset link.");
+      }
+    } else if (mode === "signup") {
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: isNativeApp()
-            ? "https://daily-exercise-tracker-nine.vercel.app/auth/callback"
-            : `${window.location.origin}/auth/callback`,
+          emailRedirectTo: getRedirectUrl("/auth/callback"),
         },
       });
       if (error) {
@@ -35,7 +50,7 @@ export default function LoginPage() {
         setMessage("Check your email for the confirmation link.");
       }
     } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -49,13 +64,34 @@ export default function LoginPage() {
     setLoading(false);
   }
 
+  function switchMode(newMode: Mode) {
+    setMode(newMode);
+    setMessage("");
+  }
+
+  const title =
+    mode === "forgot"
+      ? "Reset Password"
+      : mode === "signup"
+        ? "Sign Up"
+        : "Sign In";
+
+  const buttonLabel =
+    mode === "forgot"
+      ? "Send Reset Link"
+      : mode === "signup"
+        ? "Sign Up"
+        : "Sign In";
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight">Daily Exercise</h1>
           <p className="mt-2 text-muted-foreground text-sm">
-            Track your workouts, measure your progress
+            {mode === "forgot"
+              ? "Enter your email to receive a reset link"
+              : "Track your workouts, measure your progress"}
           </p>
         </div>
 
@@ -75,28 +111,41 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-1.5">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="w-full rounded-md bg-input border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="••••••••"
-            />
-          </div>
+          {mode !== "forgot" && (
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="password" className="block text-sm font-medium">
+                  Password
+                </label>
+                {mode === "signin" && (
+                  <button
+                    type="button"
+                    onClick={() => switchMode("forgot")}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full rounded-md bg-input border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                placeholder="••••••••"
+              />
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={loading}
             className="w-full rounded-md bg-primary text-primary-foreground font-medium py-2 text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
+            {loading ? "Loading..." : buttonLabel}
           </button>
         </form>
 
@@ -105,16 +154,37 @@ export default function LoginPage() {
         )}
 
         <p className="text-center text-sm text-muted-foreground">
-          {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-          <button
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setMessage("");
-            }}
-            className="text-primary hover:underline"
-          >
-            {isSignUp ? "Sign in" : "Sign up"}
-          </button>
+          {mode === "forgot" ? (
+            <>
+              Remember your password?{" "}
+              <button
+                onClick={() => switchMode("signin")}
+                className="text-primary hover:underline"
+              >
+                Sign in
+              </button>
+            </>
+          ) : mode === "signup" ? (
+            <>
+              Already have an account?{" "}
+              <button
+                onClick={() => switchMode("signin")}
+                className="text-primary hover:underline"
+              >
+                Sign in
+              </button>
+            </>
+          ) : (
+            <>
+              Don&apos;t have an account?{" "}
+              <button
+                onClick={() => switchMode("signup")}
+                className="text-primary hover:underline"
+              >
+                Sign up
+              </button>
+            </>
+          )}
         </p>
       </div>
     </div>

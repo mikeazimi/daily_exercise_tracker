@@ -44,6 +44,7 @@ export interface CatalogExercise {
   defaultSets: number;
   defaultReps: string;
   legacyId?: string;
+  videoUrl?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -947,4 +948,21 @@ export function searchCatalog(query: string): CatalogExercise[] {
       e.primaryMuscles.some((m) => m.toLowerCase().includes(lower)) ||
       e.id.toLowerCase().includes(lower)
   );
+}
+
+/**
+ * Get the video URL for an exercise.
+ * Returns the curated videoUrl if set, otherwise generates a YouTube search URL.
+ */
+export function getExerciseVideoUrl(exercise: CatalogExercise): string {
+  if (exercise.videoUrl) return exercise.videoUrl;
+
+  const prefix =
+    exercise.equipment === "x3"
+      ? "X3 Bar"
+      : exercise.equipment === "iron_neck"
+        ? "Iron Neck"
+        : "";
+  const terms = [prefix, exercise.name, "exercise form"].filter(Boolean).join(" ");
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(terms)}`;
 }

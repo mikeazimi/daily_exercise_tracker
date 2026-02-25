@@ -70,6 +70,30 @@ const workoutA: WorkoutDay = {
   ],
 };
 
+// Workout A without Iron Neck (for non-neck days)
+const workoutAPush: WorkoutDay = {
+  name: "Push",
+  sections: [
+    {
+      name: "Warm-up",
+      exercises: [
+        ex("cat-cow", 1, "15"),
+        ex("wall-angels", 1, "20"),
+        ex("band-pull-aparts", 1, "20"),
+      ],
+    },
+    {
+      name: "X3 Push",
+      exercises: [
+        ex("x3-front-squat", 1, "to failure"),
+        ex("x3-chest-press", 1, "to failure"),
+        ex("x3-overhead-press", 1, "to failure"),
+        ex("x3-triceps-press", 1, "to failure"),
+      ],
+    },
+  ],
+};
+
 const workoutB: WorkoutDay = {
   name: "Pull & Core",
   sections: [
@@ -101,20 +125,46 @@ const workoutB: WorkoutDay = {
   ],
 };
 
+// Workout B without Iron Neck (for non-neck days)
+const workoutBPull: WorkoutDay = {
+  name: "Pull & Core",
+  sections: [
+    {
+      name: "Warm-up",
+      exercises: [
+        ex("plank", 1, "60 sec"),
+        ex("glute-bridges", 1, "20"),
+        ex("bird-dog", 1, "10 per side"),
+      ],
+    },
+    {
+      name: "X3 Pull",
+      exercises: [
+        ex("x3-deadlift", 1, "to failure"),
+        ex("x3-bent-over-row", 1, "to failure"),
+        ex("x3-bicep-curl", 1, "to failure"),
+        ex("x3-calf-raise", 1, "to failure"),
+      ],
+    },
+  ],
+};
+
+// Schedule: Iron Neck on Mon, Wed, Thu, Sat = 4x/week
+// Neck-free days (Tue, Fri) provide recovery between sessions
 const defaultABRotation: ProgramTemplate = {
   id: "default-ab-rotation",
   name: "Default A/B Rotation",
   description:
-    "The original X3 + Iron Neck program. 6 days/week alternating push and pull focus.",
+    "X3 + Iron Neck program. 6 days/week alternating push and pull, with 4 Iron Neck sessions spaced for recovery.",
   daysPerWeek: 6,
   schedule: {
     "0": "rest",
-    "1": workoutA,
-    "2": workoutB,
-    "3": workoutA,
-    "4": workoutB,
-    "5": workoutA,
-    "6": workoutB,
+    "1": workoutA,      // Mon: Push + Neck (isometrics)
+    "2": workoutBPull,  // Tue: Pull (no neck – recovery)
+    "3": workoutA,      // Wed: Push + Neck (isometrics)
+    "4": workoutB,      // Thu: Pull + Neck (rotational)
+    "5": workoutAPush,  // Fri: Push (no neck – recovery)
+    "6": workoutB,      // Sat: Pull + Neck (rotational)
   },
 };
 

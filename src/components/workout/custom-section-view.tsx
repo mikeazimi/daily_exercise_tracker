@@ -5,7 +5,7 @@ import type { WorkoutSection } from "@/hooks/use-user-program";
 import type { ExerciseLogEntry } from "@/hooks/use-custom-workout-session";
 import type { ExerciseLog } from "@/hooks/use-workout-session";
 import type { ExerciseDefinition } from "@/lib/data/exercises";
-import { getCatalogExercise, type CatalogExercise } from "@/lib/data/exercise-catalog";
+import { getCatalogExercise, getExerciseVideoUrl, type CatalogExercise } from "@/lib/data/exercise-catalog";
 import { ExerciseCard } from "./exercise-card";
 import { X3ExerciseCard } from "./x3-exercise-card";
 import { WeightExerciseCard } from "./weight-exercise-card";
@@ -37,6 +37,7 @@ function catalogToDefinition(catalog: CatalogExercise): ExerciseDefinition {
     defaultReps: catalog.defaultReps,
     isX3: catalog.trackingType === "x3",
     isTimed: catalog.trackingType === "timed",
+    videoUrl: getExerciseVideoUrl(catalog),
     // Legacy-only fields filled with safe defaults
     workoutType: "A",
     phase: 1,

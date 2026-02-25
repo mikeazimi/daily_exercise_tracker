@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { CatalogExercise } from "@/lib/data/exercise-catalog";
+import { getExerciseVideoUrl, type CatalogExercise } from "@/lib/data/exercise-catalog";
 import type { ProgramExercise } from "@/hooks/use-user-program";
 import type { ExerciseLogEntry } from "@/hooks/use-custom-workout-session";
 import { cn } from "@/lib/utils";
@@ -136,6 +136,17 @@ export function WeightExerciseCard({
                   {exercise.primaryMuscles.join(", ")}
                 </span>
               </div>
+              <a
+                href={getExerciseVideoUrl(exercise)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+              >
+                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Watch Demo Video
+              </a>
             </div>
           )}
 

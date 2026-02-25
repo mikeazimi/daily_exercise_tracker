@@ -13,6 +13,7 @@
     "ios": "npm run build:ios && npm run sync:ios && npm run open:ios"
   },
   "dependencies": {
+    "@capacitor/camera": "^8.0.1",
     "@capacitor/core": "^8.1.0",
     "@capacitor/ios": "^8.1.0",
     "@capacitor/keyboard": "^8.0.1",

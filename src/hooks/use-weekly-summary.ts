@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 import { startOfISOWeek, endOfISOWeek, format } from "date-fns";
 
 export interface WeeklySummaryData {
@@ -15,12 +16,12 @@ export interface WeeklySummaryData {
 
 export function useWeeklySummary() {
   const supabase = createClient();
+  const { user } = useAuth();
   const [data, setData] = useState<WeeklySummaryData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
       const weekStart = format(startOfISOWeek(new Date()), "yyyy-MM-dd");
@@ -93,7 +94,7 @@ export function useWeeklySummary() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, [user]);
 
   return { data, loading };
 }

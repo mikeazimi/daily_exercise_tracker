@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export interface NutritionLog {
   id: string;
@@ -15,6 +16,7 @@ export interface NutritionLog {
 
 export function useNutritionLog(date: string) {
   const supabase = createClient();
+  const { user } = useAuth();
   const [log, setLog] = useState<NutritionLog | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -22,7 +24,6 @@ export function useNutritionLog(date: string) {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
       const { data } = await supabase
@@ -30,7 +31,7 @@ export function useNutritionLog(date: string) {
         .select("*")
         .eq("user_id", user.id)
         .eq("date", date)
-        .single();
+        .maybeSingle();
 
       if (data) {
         setLog({
@@ -48,7 +49,7 @@ export function useNutritionLog(date: string) {
       setLoading(false);
     }
     load();
-  }, [date, supabase]);
+  }, [date, user]);
 
   const saveLog = useCallback(async (
     calories: number | null,
@@ -57,7 +58,6 @@ export function useNutritionLog(date: string) {
     fatG: number | null
   ) => {
     setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setSaving(false); return; }
 
     const { data, error } = await supabase
@@ -86,10 +86,9 @@ export function useNutritionLog(date: string) {
       });
     }
     setSaving(false);
-  }, [date, supabase]);
+  }, [date, supabase, user]);
 
   const addWater = useCallback(async (oz: number) => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const currentWater = log?.waterIntakeOz || 0;
@@ -120,20 +119,20 @@ export function useNutritionLog(date: string) {
           }
       );
     }
-  }, [date, log, supabase]);
+  }, [date, log, supabase, user]);
 
   return { log, loading, saving, saveLog, addWater };
 }
 
 export function useNutritionHistory() {
   const supabase = createClient();
+  const { user } = useAuth();
   const [logs, setLogs] = useState<NutritionLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
       const { data } = await supabase
@@ -156,7 +155,7 @@ export function useNutritionHistory() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, [user]);
 
   return { logs, loading };
 }

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 import type { ExerciseDefinition } from "@/lib/data/exercises";
 import { calculateEstimatedForce } from "@/lib/force-calculator";
 
@@ -25,6 +26,7 @@ interface WorkoutSession {
 
 export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDefinition[], date: Date = new Date()) {
   const supabase = createClient();
+  const { user } = useAuth();
   const [session, setSession] = useState<WorkoutSession | null>(null);
   const [logs, setLogs] = useState<Map<string, ExerciseLog>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,6 @@ export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDef
   useEffect(() => {
     async function loadSession() {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
       const { data: existingSession } = await supabase
@@ -44,7 +45,7 @@ export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDef
         .select("*")
         .eq("user_id", user.id)
         .eq("date", dateStr)
-        .single();
+        .maybeSingle();
 
       if (existingSession) {
         setSession(existingSession);
@@ -72,10 +73,9 @@ export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDef
       setLoading(false);
     }
     loadSession();
-  }, [dateStr, supabase]);
+  }, [dateStr, user]);
 
   const startSession = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     const { data, error } = await supabase
@@ -107,7 +107,7 @@ export function useWorkoutSession(workoutType: "A" | "B", exercises: ExerciseDef
       }
       setLogs(logMap);
     }
-  }, [supabase, workoutType, dateStr, exercises]);
+  }, [supabase, workoutType, dateStr, exercises, user]);
 
   const toggleExercise = useCallback(async (exerciseId: string) => {
     if (!session) return;

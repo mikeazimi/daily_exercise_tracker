@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 import { useProgressData } from "./use-progress-data";
 import { analyzeAllExercises, type ProgressionRecommendation } from "@/lib/progression/analyzer";
 
 export function useProgression() {
   const supabase = createClient();
+  const { user } = useAuth();
   const { x3Progress, loading: progressLoading } = useProgressData();
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,6 @@ export function useProgression() {
   // Load dismissed recommendations
   useEffect(() => {
     async function loadDismissed() {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
       const { data } = await supabase
@@ -30,7 +31,7 @@ export function useProgression() {
       setLoading(false);
     }
     loadDismissed();
-  }, [supabase]);
+  }, [user]);
 
   const allRecommendations = useMemo(() => {
     if (progressLoading) return [];
@@ -42,7 +43,6 @@ export function useProgression() {
   );
 
   const acceptRecommendation = useCallback(async (rec: ProgressionRecommendation) => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     await supabase.from("progression_events").insert({
@@ -53,10 +53,9 @@ export function useProgression() {
       to_band_id: rec.suggestedBandId,
       reason: rec.reason,
     });
-  }, [supabase]);
+  }, [supabase, user]);
 
   const dismissRecommendation = useCallback(async (rec: ProgressionRecommendation) => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
     await supabase.from("progression_events").insert({
@@ -69,7 +68,7 @@ export function useProgression() {
     });
 
     setDismissedIds((prev) => new Set([...prev, rec.exerciseId]));
-  }, [supabase]);
+  }, [supabase, user]);
 
   return {
     recommendations,

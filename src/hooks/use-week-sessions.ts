@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 
 export type DayStatus = "completed" | "started" | "rest" | "none";
 
 export function useWeekSessions(weekDate: Date): Map<string, DayStatus> {
   const supabase = createClient();
+  const { user } = useAuth();
   const [statuses, setStatuses] = useState<Map<string, DayStatus>>(new Map());
 
   const weekStart = format(startOfWeek(weekDate, { weekStartsOn: 1 }), "yyyy-MM-dd");
@@ -15,7 +17,6 @@ export function useWeekSessions(weekDate: Date): Map<string, DayStatus> {
 
   useEffect(() => {
     async function loadWeek() {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const { data: sessions } = await supabase
@@ -34,7 +35,7 @@ export function useWeekSessions(weekDate: Date): Map<string, DayStatus> {
       setStatuses(map);
     }
     loadWeek();
-  }, [weekStart, weekEnd, supabase]);
+  }, [weekStart, weekEnd, user]);
 
   return statuses;
 }

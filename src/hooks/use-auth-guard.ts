@@ -10,6 +10,11 @@ export function useAuthGuard(skip = false) {
   useEffect(() => {
     if (skip) return;
 
+    // When transitioning from a public route (skip=true → false),
+    // loading may still be false from initial state. Reset it so
+    // AuthGuard doesn't redirect before getUser() resolves.
+    setLoading(true);
+
     const supabase = createClient();
 
     supabase.auth.getUser().then(({ data: { user } }) => {

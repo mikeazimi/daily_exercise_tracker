@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthGuard } from "@/hooks/use-auth-guard";
+import { useAuth } from "@/components/auth/auth-provider";
 
 const PUBLIC_ROUTES = ["/login", "/auth"];
 
@@ -10,13 +10,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const isPublicRoute = PUBLIC_ROUTES.some((r) => pathname.startsWith(r));
-  const { loading, authenticated } = useAuthGuard(isPublicRoute);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (!isPublicRoute && !loading && !authenticated) {
+    if (!isPublicRoute && !loading && !user) {
       router.push("/login");
     }
-  }, [isPublicRoute, loading, authenticated, router]);
+  }, [isPublicRoute, loading, user, router]);
 
   if (isPublicRoute) {
     return <>{children}</>;
@@ -30,7 +30,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!authenticated) {
+  if (!user) {
     return null;
   }
 

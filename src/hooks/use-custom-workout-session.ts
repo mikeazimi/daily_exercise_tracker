@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 import { getCatalogExercise } from "@/lib/data/exercise-catalog";
 import { calculateEstimatedForce } from "@/lib/force-calculator";
 import type { WorkoutDay, ProgramExercise } from "@/hooks/use-user-program";
@@ -47,6 +48,7 @@ export function useCustomWorkoutSession(
   date: Date
 ) {
   const supabase = createClient();
+  const { user } = useAuth();
   const [session, setSession] = useState<WorkoutSession | null>(null);
   const [logs, setLogs] = useState<Map<string, ExerciseLogEntry>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -63,9 +65,6 @@ export function useCustomWorkoutSession(
   useEffect(() => {
     async function loadSession() {
       setLoading(true);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
         return;
@@ -76,7 +75,7 @@ export function useCustomWorkoutSession(
         .select("*")
         .eq("user_id", user.id)
         .eq("date", dateStr)
-        .single();
+        .maybeSingle();
 
       if (existingSession) {
         setSession({
@@ -151,13 +150,10 @@ export function useCustomWorkoutSession(
       setLoading(false);
     }
     loadSession();
-  }, [dateStr, supabase, workoutDay.name]);
+  }, [dateStr, user, workoutDay.name]);
 
   // Start a new session
   const startSession = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
     if (!user) return;
 
     const { data, error } = await supabase
@@ -244,7 +240,7 @@ export function useCustomWorkoutSession(
       }
       setLogs(logMap);
     }
-  }, [supabase, workoutDay, dateStr, programId, allExercises]);
+  }, [supabase, workoutDay, dateStr, programId, allExercises, user]);
 
   // Toggle a simple exercise (reps_only, timed)
   const toggleExercise = useCallback(
@@ -328,9 +324,6 @@ export function useCustomWorkoutSession(
   const addSet = useCallback(
     async (exerciseId: string) => {
       if (!session) return;
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) return;
 
       const entry = logs.get(exerciseId);
@@ -364,7 +357,7 @@ export function useCustomWorkoutSession(
         return next;
       });
     },
-    [session, logs, supabase]
+    [session, logs, supabase, user]
   );
 
   // Log X3 exercise (same as legacy)

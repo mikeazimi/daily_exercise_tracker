@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export interface PersonalRecord {
   exerciseId: string;
@@ -21,12 +22,12 @@ export interface PRResult {
 
 export function usePersonalRecords() {
   const supabase = createClient();
+  const { user } = useAuth();
   const [records, setRecords] = useState<PersonalRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
       const { data } = await supabase
@@ -46,7 +47,7 @@ export function usePersonalRecords() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, [user]);
 
   const checkForPR = useCallback(async (
     exerciseId: string,
@@ -56,7 +57,6 @@ export function usePersonalRecords() {
     estimatedForce: number,
     sessionId: string
   ): Promise<PRResult | null> => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
     // Check max_reps for this exercise+band
@@ -123,7 +123,7 @@ export function usePersonalRecords() {
     }
 
     return result;
-  }, [records, supabase]);
+  }, [records, supabase, user]);
 
   const hasRepPR = useCallback((exerciseId: string, bandId: string) => {
     return records.some(

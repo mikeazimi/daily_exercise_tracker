@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export interface ProgressPhoto {
   id: string;
@@ -13,6 +14,7 @@ export interface ProgressPhoto {
 
 export function useProgressPhotos() {
   const supabase = createClient();
+  const { user } = useAuth();
   const [photos, setPhotos] = useState<ProgressPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -20,7 +22,6 @@ export function useProgressPhotos() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
       const { data } = await supabase
@@ -41,7 +42,7 @@ export function useProgressPhotos() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, [user]);
 
   const compressImage = useCallback(async (file: File, maxWidth = 800): Promise<Blob> => {
     return new Promise((resolve) => {
@@ -70,7 +71,6 @@ export function useProgressPhotos() {
     measurementId?: string
   ) => {
     setUploading(true);
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setUploading(false); return; }
 
     const compressed = await compressImage(file);
@@ -112,7 +112,7 @@ export function useProgressPhotos() {
       setPhotos((prev) => [newPhoto, ...prev]);
     }
     setUploading(false);
-  }, [supabase, compressImage]);
+  }, [supabase, compressImage, user]);
 
   const deletePhoto = useCallback(async (photoId: string) => {
     const photo = photos.find((p) => p.id === photoId);

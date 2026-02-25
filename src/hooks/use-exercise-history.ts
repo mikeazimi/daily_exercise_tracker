@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export interface ExerciseHistoryEntry {
   date: string;
@@ -29,6 +30,7 @@ export interface WeightSessionSummary {
 
 export function useExerciseHistory(exerciseId: string) {
   const supabase = createClient();
+  const { user } = useAuth();
   const [history, setHistory] = useState<ExerciseHistoryEntry[]>([]);
   const [weightHistory, setWeightHistory] = useState<WeightSessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,6 @@ export function useExerciseHistory(exerciseId: string) {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
       // Run both queries in parallel
@@ -122,7 +123,7 @@ export function useExerciseHistory(exerciseId: string) {
       setLoading(false);
     }
     load();
-  }, [exerciseId, supabase]);
+  }, [exerciseId, user]);
 
   return { history, weightHistory, loading };
 }

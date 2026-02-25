@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export interface SessionSummary {
   id: string;
@@ -26,6 +27,7 @@ export interface X3ProgressPoint {
 
 export function useProgressData() {
   const supabase = createClient();
+  const { user } = useAuth();
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [x3Progress, setX3Progress] = useState<X3ProgressPoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,9 +35,6 @@ export function useProgressData() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
         return;
@@ -128,7 +127,7 @@ export function useProgressData() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, [user]);
 
   return { sessions, x3Progress, loading };
 }

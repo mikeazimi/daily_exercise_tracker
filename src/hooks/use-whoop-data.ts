@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 
 export interface WhoopDayData {
   date: string;
@@ -15,6 +16,7 @@ export interface WhoopDayData {
 
 export function useWhoopData() {
   const supabase = createClient();
+  const { user } = useAuth();
   const [data, setData] = useState<WhoopDayData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
@@ -22,7 +24,6 @@ export function useWhoopData() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
       // Check connection
@@ -54,7 +55,7 @@ export function useWhoopData() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, [user]);
 
   const todayStr = new Date().toISOString().split("T")[0];
   const todayData = data.find((d) => d.date === todayStr) || null;

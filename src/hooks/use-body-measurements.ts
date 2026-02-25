@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 import { differenceInDays } from "date-fns";
 
 export interface BodyMeasurement {
@@ -13,6 +14,7 @@ export interface BodyMeasurement {
 
 export function useBodyMeasurements() {
   const supabase = createClient();
+  const { user } = useAuth();
   const [measurements, setMeasurements] = useState<BodyMeasurement[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -20,7 +22,6 @@ export function useBodyMeasurements() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
       const { data } = await supabase
@@ -40,7 +41,7 @@ export function useBodyMeasurements() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, [user]);
 
   const latest = measurements[0] || null;
 
@@ -54,7 +55,6 @@ export function useBodyMeasurements() {
     bodyFatPct: number | null
   ) => {
     setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setSaving(false); return; }
 
     const { data, error } = await supabase
@@ -83,7 +83,7 @@ export function useBodyMeasurements() {
       });
     }
     setSaving(false);
-  }, [supabase]);
+  }, [supabase, user]);
 
   return { measurements, latest, loading, saving, saveMeasurement, daysSinceLastMeasurement };
 }

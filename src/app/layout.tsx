@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { BottomNav } from "@/components/nav";
+import { AuthProvider } from "@/components/auth/auth-provider";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { CapacitorInit } from "@/components/capacitor-init";
 
@@ -31,10 +32,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="min-h-screen pb-20">
-        <AuthGuard>
-          <main className="mx-auto max-w-lg px-4 py-6">{children}</main>
-          <BottomNav />
-        </AuthGuard>
+        <AuthProvider>
+          <AuthGuard>
+            <main className="mx-auto max-w-lg px-4 py-6">{children}</main>
+            <BottomNav />
+          </AuthGuard>
+        </AuthProvider>
         <CapacitorInit />
         <script
           dangerouslySetInnerHTML={{

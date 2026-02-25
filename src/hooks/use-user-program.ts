@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/auth-provider";
 import { getTodaysWorkoutType, getWorkoutLabel } from "@/lib/utils";
 import { getDay } from "date-fns";
 
@@ -46,6 +47,7 @@ export interface TodaysWorkout {
 
 export function useUserProgram() {
   const supabase = createClient();
+  const { user } = useAuth();
   const [program, setProgram] = useState<UserProgram | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -54,9 +56,6 @@ export function useUserProgram() {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
         return;
@@ -83,15 +82,12 @@ export function useUserProgram() {
       setLoading(false);
     }
     load();
-  }, [supabase]);
+  }, [user]);
 
   // Save or create a program
   const saveProgram = useCallback(
     async (schedule: ProgramSchedule, name?: string) => {
       setSaving(true);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
       if (!user) {
         setSaving(false);
         return;
@@ -145,7 +141,7 @@ export function useUserProgram() {
       }
       setSaving(false);
     },
-    [supabase, program]
+    [supabase, program, user]
   );
 
   // Delete the custom program (reverts to default A/B)
